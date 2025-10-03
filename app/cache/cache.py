@@ -1,5 +1,4 @@
 import redis
-from typing import Optional
 from config.config import config
 
 
@@ -7,11 +6,25 @@ from config.config import config
 
 class RedisCache:
 
-    _instance:Optional[redis] = None
+    _instance = None
 
     def __init__(self, host:str, port:str, username:str=None, password:str=None, db:str = 0, **kwargs):
+        self.host = host
+        self.password = password
+        self.username = username
+        self.port = port
+        self.db = db
+        self.kwargs = kwargs
+        
+
+    def __new__(cls,*args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+    
+    def connect(self)-> None:
         try:
-            self.redis = redis.Redis(host, port, db, username, password, kwargs)
+            self.redis = redis.Redis(self.host, self.port, self.db, self.username, self.password, **self.kwargs)
             self.redis.ping()
         except redis.AuthenticationError as e:
             raise e
@@ -19,20 +32,18 @@ class RedisCache:
             raise e
         except Exception as e:
             raise e
-        
-
-    def __new__(cls,*args, **kwargs):
-        if not cls._instance:
-            cls._instance = super().__new__(cls)
-        return cls
     
-    def get_redis_client(self) -> redis.Redis:
+    def get_redis_instance(self) -> redis.Redis:
         return self.redis
+    
+    def close(self):
+        return redis.Redis.close()
 
 
-def get_redis_client():
-    redis_client:RedisCache = RedisCache(config.redis_host, config.redis_port)
-    return redis_client
+
+redis_cache_manager_instance:RedisCache = RedisCache(config.redis_host, config.redis_port)
+
+
 
     
 

@@ -5,17 +5,19 @@ from database.database import db_manager
 from routers import router
 from config.config import config
 import contextlib
-from cache.cache import get_redis_client
+from cache.cache import redis_cache_manager_instance
 
 
 @contextlib.asynccontextmanager
 async def life_span(app:FastAPI):
     print("Application starting up")
     await db_manager.connect_to_db()
-    get_redis_client()
+    redis_cache_manager_instance.connect()
     yield
     print("cleangin up engines")
     await db_manager.clean_up_engines()
+    redis_cache_manager_instance.close()
+    print("completed cdb clean up")
 
 app = FastAPI(
     title='Boiler plate',

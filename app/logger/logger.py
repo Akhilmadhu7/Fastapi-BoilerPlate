@@ -6,3 +6,6 @@
 # logger.info('So should this')
 # logger.warning('And this, too')
 # logger.error('And non-ASCII stuff, too, like Øresund and Malmö')
+
+
+
